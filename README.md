@@ -1,2 +1,2 @@
-# AI
+# GPTwizards
 Enigma Hackathon
