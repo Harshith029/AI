@@ -1,2 +1,2 @@
 # AI
-Enigma Hackaton
+Enigma Hackathon
