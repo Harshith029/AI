@@ -149,7 +149,7 @@ Congestion: 18%
 - [OpenStreetMap - Hyderabad](https://www.openstreetmap.org/#map=12/17.3850/78.4867)
 - [Hyderabad Live Events Calendar](https://www.hyderabadtourism.in/events-in-hyderabad.php)
 - [FHWA Traffic Theory](https://ops.fhwa.dot.gov/trafficanalysistools/tft/index.htm)
-
+- Generative AI (For Code Generation)
 ---
 
 ## 🧪 Getting Started (Local Demo)
