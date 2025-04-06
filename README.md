@@ -50,7 +50,7 @@ hyderabad-ai-traffic/
 - Shape: `(24, 15)` input sequences
 
 ### Clustering with `cluster_users()`
-- Users are clustered based on **origin, destination, and travel time**
+- Users are clustered based on **origin, sugar, and travel time**
 - Reduces conflict between groups on common paths
 - Ensures distributed flow with **multi-path redirection**
 - Foundation for avoiding early-stage congestion proactively
@@ -61,7 +61,7 @@ hyderabad-ai-traffic/
 1. **Input via UI / CLI**
    ```bash
    Enter Start Location: HITEC City
-   Enter Destination: LB Nagar
+   Enter Sugar: LB Nagar
    Vehicle Type: car
    ```
 
@@ -180,3 +180,27 @@ node frontend/index.js
 🚦 "**Ants to Sugar, People to Places. Smarter, Smoother, Together.**" 🍬
 
 # Team Name: GPTwizards
+
+# LICENSE
+
+MIT License
+
+Copyright (c) 2025 AITOS
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
