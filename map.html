@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapster - Google Maps Alternative</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', Arial, sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background-color: #4285F4;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-icon {
+            background-color: white;
+            color: #4285F4;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .search-container {
+            flex-grow: 1;
+            max-width: 600px;
+            margin: 0 20px;
+            position: relative;
+        }
+
+        #search-input {
+            width: 100%;
+            padding: 10px 15px;
+            border-radius: 24px;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .user-controls {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-controls button {
+            background: none;
+            border: none;
+            color: white;
+            margin-left: 15px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+        }
+
+        .user-controls button i {
+            margin-right: 5px;
+        }
+
+        .main-content {
+            display: flex;
+            flex-grow: 1;
+            height: calc(100vh - 60px);
+        }
+
+        #map {
+            flex-grow: 1;
+            height: 100%;
+        }
+
+        .sidebar {
+            width: 350px;
+            background-color: white;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+            z-index: 500;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+
+        .sidebar-header {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-title {
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .close-sidebar {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .sidebar-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+
+        .directions-panel {
+            display: none;
+        }
+
+        .directions-input {
+            margin-bottom: 15px;
+        }
+
+        .directions-input input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .directions-actions {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .directions-actions button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .get-directions {
+            background-color: #4285F4;
+            color: white;
+        }
+
+        .clear-directions {
+            background-color: #f1f1f1;
+            color: #333;
+        }
+
+        .search-results {
+            display: none;
+        }
+
+        .search-result-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+
+        .search-result-item:hover {
+            background-color: #f5f5f5;
+        }
+
+        .search-result-name {
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .search-result-address {
+            color: #666;
+            font-size: 14px;
+        }
+        
+
+        .map-controls {
+            position: absolute;
+            top: 80px;
+            right: 20px;
+            z-index: 400;
+            display: flex;
+            flex-direction: column;
+        }
+        .user-location-marker div {
+    background-color: #34A853;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid white;
+}
+
+        .map-control {
+            background-color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            cursor: pointer;
+            border: none;
+            color: #333;
+        }
+
+        .map-control.active {
+            background-color: #4285F4;
+            color: white;
+        }
+
+        .toggle-sidebar {
+            position: absolute;
+            left: 20px;
+            top: 80px;
+            z-index: 400;
+            background-color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            cursor: pointer;
+            border: none;
+        }
+
+        .map-marker {
+            background-color: #4285F4;
+            width: 24px;
+            height: 24px;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            position: relative;
+        }
+
+        .map-marker::after {
+            content: '';
+            width: 12px;
+            height: 12px;
+            background-color: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            transform: rotate(45deg);
+        }
+
+        .route-marker {
+            background-color: #EA4335;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .route-marker::after {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background-color: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 4px;
+            left: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: absolute;
+                height: 100%;
+                width: 80%;
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.visible {
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <div class="logo-icon">M</div>
+            <span>Mapster</span>
+        </div>
+        <div class="search-container">
+            <input type="text" id="search-input" placeholder="Search for places or addresses">
+        </div>
+        <div class="user-controls">
+            <button><i class="material-icons"></i> Directions</button>
+            <button><i class="material-icons"></i> Sign in</button>
+        </div>
+    </header>
+
+    <div class="main-content">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">Directions</div>
+                <button class="close-sidebar">&times;</button>
+            </div>
+            <div class="sidebar-content">
+                <div class="directions-panel">
+                    <div class="directions-input">
+                        <input type="text" id="from-input" placeholder="Starting point">
+                        <input type="text" id="to-input" placeholder="Destination">
+                    </div>
+                    <div class="directions-actions">
+                        <button class="get-directions">Get Directions</button>
+                        <button class="clear-directions">Clear</button>
+                    </div>
+                    <div id="directions-results" style="margin-top: 20px;"></div>
+                </div>
+                <div class="search-results">
+                    <div id="search-results-list"></div>
+                </div>
+            </div>
+        </div>
+        <div id="map"></div>
+        <div class="map-controls">
+            <button class="map-control" id="zoom-in">+</button>
+            <button class="map-control" id="zoom-out">-</button>
+            <button class="map-control" id="my-location">📍</button>
+            <button class="map-control" id="map-type">🗺</button>
+        </div>
+        <button class="toggle-sidebar" id="toggle-sidebar">☰</button>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+    <script>
+        // Initialize the map
+        const map = L.map('map').setView([40.7128, -74.0060], 13); // Default to New York
+        
+        // Add tile layer (OpenStreetMap)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Variables to store map state
+        let currentMarkers = [];
+        let routingControl = null;
+        let currentLocationMarker = null;
+        let mapType = 'roadmap';
+
+        // DOM Elements
+        const searchInput = document.getElementById('search-input');
+        const fromInput = document.getElementById('from-input');
+        const toInput = document.getElementById('to-input');
+        const getDirectionsBtn = document.querySelector('.get-directions');
+        const clearDirectionsBtn = document.querySelector('.clear-directions');
+        const directionsResults = document.getElementById('directions-results');
+        const searchResultsList = document.getElementById('search-results-list');
+        const directionsPanel = document.querySelector('.directions-panel');
+        const searchResultsPanel = document.querySelector('.search-results');
+        const sidebar = document.querySelector('.sidebar');
+        const toggleSidebarBtn = document.getElementById('toggle-sidebar');
+        const closeSidebarBtn = document.querySelector('.close-sidebar');
+        const zoomInBtn = document.getElementById('zoom-in');
+        const zoomOutBtn = document.getElementById('zoom-out');
+        const myLocationBtn = document.getElementById('my-location');
+        const mapTypeBtn = document.getElementById('map-type');
+
+        // Event Listeners
+        searchInput.addEventListener('input', handleSearch);
+        searchInput.addEventListener('focus', showSearchPanel);
+        getDirectionsBtn.addEventListener('click', showDirections);
+        clearDirectionsBtn.addEventListener('click', clearDirections);
+        toggleSidebarBtn.addEventListener('click', toggleSidebar);
+        closeSidebarBtn.addEventListener('click', toggleSidebar);
+        zoomInBtn.addEventListener('click', () => map.zoomIn());
+        zoomOutBtn.addEventListener('click', () => map.zoomOut());
+        myLocationBtn.addEventListener('click', locateUser);
+        mapTypeBtn.addEventListener('click', toggleMapType);
+
+        // Show directions panel by default
+        directionsPanel.style.display = 'block';
+
+        // Functions
+        function handleSearch(e) {
+            const query = e.target.value.trim();
+            if (query.length < 3) {
+                searchResultsList.innerHTML = '';
+                return;
+            }
+
+            // Simulate API call with mock data
+            setTimeout(() => {
+                const mockResults = [
+                    {
+                        name: 'Empire State Building',
+                        address: '20 W 34th St, New York, NY 10001',
+                        lat: 40.7484,
+                        lng: -73.9857
+                    },
+                    {
+                        name: 'Times Square',
+                        address: 'Manhattan, NY 10036',
+                        lat: 40.7580,
+                        lng: -73.9855
+                    },
+                    {
+                        name: 'Central Park',
+                        address: 'New York, NY 10024',
+                        lat: 40.7829,
+                        lng: -73.9654
+                    }
+                ].filter(item => 
+                    item.name.toLowerCase().includes(query.toLowerCase()) || 
+                    item.address.toLowerCase().includes(query.toLowerCase())
+                );
+
+                displaySearchResults(mockResults);
+            }, 500);
+        }
+
+        function displaySearchResults(results) {
+            searchResultsList.innerHTML = '';
+            
+            if (results.length === 0) {
+                searchResultsList.innerHTML = '<div class="search-result-item">No results found</div>';
+                return;
+            }
+
+            results.forEach(result => {
+                const item = document.createElement('div');
+                item.className = 'search-result-item';
+                item.innerHTML = `
+                    <div class="search-result-name">${result.name}</div>
+                    <div class="search-result-address">${result.address}</div>
+                `;
+                item.addEventListener('click', () => {
+                    searchInput.value = result.name;
+                    showSearchPanel(false);
+                    addMarker(result.lat, result.lng, result.name);
+                    map.setView([result.lat, result.lng], 15);
+                });
+                searchResultsList.appendChild(item);
+            });
+        }
+
+        function showSearchPanel(show = true) {
+            if (show) {
+                searchResultsPanel.style.display = 'block';
+                directionsPanel.style.display = 'none';
+            } else {
+                searchResultsPanel.style.display = 'none';
+                directionsPanel.style.display = 'block';
+            }
+        }
+        function locateUser() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            position => {
+                const { latitude, longitude } = position.coords;
+
+                // Remove previous location marker if it exists
+                if (currentLocationMarker) {
+                    map.removeLayer(currentLocationMarker);
+                }
+
+                // Create a custom marker icon for user location
+                const locationIcon = L.divIcon({
+                    className: 'user-location-marker',
+                    html: '<div style="background-color: #34A853; width: 16px; height: 16px; border-radius: 50%; border: 2px solid white;"></div>',
+                    iconSize: [20, 20],
+                    iconAnchor: [10, 10]
+                });
+
+                // Add marker and center map
+                currentLocationMarker = L.marker([latitude, longitude], { icon: locationIcon })
+                    .addTo(map)
+                    .bindPopup("You are here")
+                    .openPopup();
+
+                map.setView([latitude, longitude], 15);
+            },
+            error => {
+                alert("Unable to retrieve your location.");
+                console.error(error);
+            }
+        );
+    } else {
+        alert("Geolocation is not supported by your browser.");
+    }
+}
+
+        function addMarker(lat, lng, title = '') {
+            // Clear existing markers
+            clearMarkers();
+            
+            // Create custom marker icon
+            const markerIcon = L.divIcon({
+                className: 'custom-marker',
+                html: '<div class="map-marker"></div>',
+                iconSize: [24, 24],
+                iconAnchor: [12, 24]
+            });
+
+            const marker = L.marker([lat, lng], {
+                icon: markerIcon,
+                title: title
+            }).addTo(map);
+            
+            if (title) {
+                marker.bindPopup(title);
+            }
+            
+            currentMarkers.push(marker);
+            return marker;
+        }
+
+        function clearMarkers() {
+            currentMarkers.forEach(marker => map.removeLayer(marker));
+            currentMarkers = [];
+        }
+
+        function showDirections() {
+            const from = fromInput.value.trim();
+            const to = toInput.value.trim();
+            
+            if (!from || !to) {
+                alert('Please enter both starting point and destination');
+                return;
+            }
+
+            // Mock coordinates for demonstration
+            const fromCoords = [40.7128, -74.0060]; // Default to NYC
+            const toCoords = [40.7484, -73.9857];   // Empire State Building
+
+            // Clear previous route if exists
+            if (routingControl) {
+                map.removeControl(routingControl);
+            }
+
+            // Add markers for start and end points
+            clearMarkers();
+            addMarker(fromCoords[0], fromCoords[1], 'Starting Point');
+            addMarker(toCoords[0], toCoords[1], 'Destination');
+
+            // Create route
+            routingControl = L.Routing.control({
+                waypoints: [
+                    L.latLng(fromCoords[0], fromCoords[1]),
+                    L.latLng(toCoords[0], toCoords[1])
+                ],
+                routeWhileDragging: true,
+                showAlternatives: false,
+                addWaypoints: false,
+                draggableWaypoints: false,
+                fitSelectedRoutes: true,
+                lineOptions: {
+                    styles: [{color: '#4285F4', opacity: 0.7, weight: 5}]
+                },
+                createMarker: function(i, waypoint, n) {
+                    return L.marker(waypoint.latLng, {
+                        icon: L.divIcon({
+                            className: 'custom-route-marker',
+                            html: i === 0 ? 
+                                '<div class="route-marker" style="background-color: #4285F4;"></div>' : 
+                                '<div class="route-marker" style="background-color: #EA4335;"></div>',
+                            iconSize: [16, 16],
+                            iconAnchor: [8, 8]
+                        })
+                    });
+                }
+            }).addTo(map);
+
+            // Mock directions results
+            directionsResults.innerHTML = `
+                <h3>Directions from ${from} to ${to}</h3>
+                <div style="margin-top: 10px;">
+                    <div><strong>Distance:</strong> 2.5 miles</div>
+                    <div><strong>Duration:</strong> 15 minutes</div>
+                </div>
+                <div style="margin-top: 15px;">
+                    <div style="display: flex; margin-bottom: 10px;">
+                        <div style="width: 24px; height: 24px; background-color: #4285F4; border-radius: 50%; margin-right: 10px;"></div>
+                        <div>Start at ${from}</div>
+                    </div>
+                    <div style="display: flex; margin-bottom: 10px;">
+                        <div style="width: 24px; height: 24px; background-color: #FBBC05; border-radius: 50%; margin-right: 10px;"></div>
+                        <div>Head northeast on Broadway</div>
+                    </div>
+                    <div style="display: flex; margin-bottom: 10px;">
+                        <div style="width: 24px; height: 24px; background-color: #FBBC05; border-radius: 50%; margin-right: 10px;"></div>
+                        <div>Turn right onto 5th Ave</div>
+                    </div>
+                    <div style="display: flex; margin-bottom: 10px;">
+                        <div style="width: 24px; height: 24px; background-color: #EA4335; border-radius: 50%; margin-right: 10px;"></div>
+                        <div>Arrive at ${to}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function clearDirections() {
+            if (routingControl) {
+                map.removeControl(routingControl);
+                routingControl = null;
+            }
+            clearMarkers();
+            fromInput.value = '';
+            toInput.value = '';
+            directionsResults.innerHTML = '';
+        }
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('collapsed');
+        }
+
+        function locateUser() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    position => {
+                        const { latitude, longitude } = position.coords;
+                        
+                        // Remove previous location marker if exists
+                        if (currentLocationMarker) {
+                            map.removeLayer(currentLocationMarker);
+                        }
+                        
+                        // Add new marker
+                        currentLocationMarker = L.marker([latitude, longitude], {
+                            icon: L.divIcon({
+                                className: 'custom-location-marker',
+                                html: '<div style="width: 16px; height: 16px; background-color: #34A853; border-radius: 50%; border: 2px solid white;"></div>',
+                                iconSize: [20, 20],
+                                iconAnchor: [10, 10]
+                            })
+                        }).addTo(map)
+                        .bindPopup('Your location').openPopup();
+                        
+                        map.setView([latitude, longitude], 15);
+                        myLocationBtn.classList.add('active');
+                        
+                        // Remove active class after 2 seconds
+                        setTimeout(() => {
+                            myLocationBtn.classList.remove('active');
+                        }, 2000);
+                    },
+                    error => {
+                        alert('Unable to retrieve your location: ' + error.message);
+                    }
+                );
+            } else {
+                alert('Geolocation is not supported by your browser');
+            }
+        }
+
+        function toggleMapType() {
+            if (mapType === 'roadmap') {
+                // Switch to satellite view
+                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+                }).addTo(map);
+                mapType = 'satellite';
+                mapTypeBtn.textContent = '🗺';
+                mapTypeBtn.title = 'Switch to roadmap view';
+            } else {
+                // Switch back to roadmap view
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                }).addTo(map);
+                mapType = 'roadmap';
+                mapTypeBtn.textContent = '🛰';
+                mapTypeBtn.title = 'Switch to satellite view';
+            }
+        }
+
+        // Add initial marker
+        addMarker(40.7128, -74.0060, 'New York City');
+    </script>
+</body>
+</html>
